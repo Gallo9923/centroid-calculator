@@ -1,6 +1,8 @@
 package ui;
 
+import java.awt.TextArea;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -45,7 +47,7 @@ public class Controller {
 	}
 
 	@FXML
-	void addColumn(ActionEvent event) {
+	private void addColumn(ActionEvent event) {
 
 		for (int i = 0; i < rowSize; i++) {
 			grid.add(new TextField(), columnSize, i);
@@ -56,7 +58,7 @@ public class Controller {
 	}
 
 	@FXML
-	void deleteColumn(ActionEvent event) {
+	private void deleteColumn(ActionEvent event) {
 
 		if (columnSize > 0) {
 
@@ -88,7 +90,7 @@ public class Controller {
 	}
 
 	@FXML
-	void addRow(ActionEvent event) {
+	private void addRow(ActionEvent event) {
 
 		for (int i = 0; i < columnSize; i++) {
 			grid.add(new TextField(), i, rowSize);
@@ -99,22 +101,85 @@ public class Controller {
 	}
 
 	@FXML
-	void calculate(ActionEvent event) {
-		Clipboard cb = Clipboard.getSystemClipboard();
-		System.out.println(cb.getString());
-
-		ObservableList<Node> nodes = grid.getChildren();
-
-		for (int i = 0; i < nodes.size(); i++) {
-			Node n = nodes.get(i);
-			System.out.println("Row: " + GridPane.getRowIndex(n) + " COL: " + GridPane.getColumnIndex(n) + " Txt: "
-					+ ((TextField) n).getText());
-		}
+	private void calculate(ActionEvent event) {
+		
 
 	}
 
 	@FXML
-	void deleteRow(ActionEvent event) {
+	private void paste(ActionEvent event) {
+		
+		Clipboard cb = Clipboard.getSystemClipboard();
+
+		try {
+		
+			String[] rowLines = cb.getString().split("\n");
+			
+			int[][] matrix = new int[rowLines.length][rowLines[0].split("	").length];
+			
+			for(int i=0; i<matrix.length; i++) {
+				String[] row = rowLines[i].split("	");
+				for(int j=0; j<matrix[0].length; j++) {
+					matrix[i][j] = Integer.parseInt(row[j].trim());
+				}
+			}
+			
+			resizeGridPane(matrix.length, matrix[0].length);
+			insertValues(matrix);
+			
+		}catch(NumberFormatException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private void insertValues(int[][] matrix) {
+		
+		ObservableList<Node> nodes = grid.getChildren();
+		
+		for(Node node : nodes) {
+			
+			Integer rowIndex = GridPane.getRowIndex(node);
+			Integer columnIndex = GridPane.getColumnIndex(node);
+			
+			if(rowIndex == null) {
+				
+				if(columnIndex == null) {
+					((TextField)node).setText(matrix[0][0] + "");
+				}else {
+					((TextField)node).setText(matrix[0][columnIndex] + "");
+				}
+			}else {
+				if(columnIndex == null) {
+					((TextField)node).setText(matrix[rowIndex][0] + "");
+				}else {
+					((TextField)node).setText(matrix[rowIndex][columnIndex] + "");
+				}
+			}
+			
+			
+		}
+		
+		
+	}
+	
+	private void resizeGridPane(int rows, int columns) {
+		
+		grid.getChildren().clear();
+		
+		for(int i=0; i<rows; i++) {
+			for(int j=0; j<columns; j++) {
+				grid.add(new TextField(), j, i);
+			}
+		}
+
+		this.rows.setText(rows + "");
+		this.columns.setText(columns + "");
+		
+	}
+	
+	@FXML
+	private void deleteRow(ActionEvent event) {
 
 		if (rowSize > 0) {
 
